@@ -59,7 +59,7 @@ int App_main( int argc, char** argv )
 
     for(int i=0;i<numImg;i++){
         Mat tmp;
-        sprintf(filename,"%s/scene_%03d.png",argv[1],i);
+        sprintf(filename,"%s/%04d.png",argv[1],i);
 //        sprintf(filename,"../../Trajectory_30_seconds/scene_%03d.png",i);
         convertAhandaPovRayToStandard(argv[1],
                                       i,
@@ -70,9 +70,12 @@ int App_main( int argc, char** argv )
         cout<<"Opening: "<< filename << endl;
         
         imread(filename, -1).convertTo(image,CV_32FC3,1.0/65535.0);
-        resize(image,image,Size(),reconstructionScale,reconstructionScale);
+        cv::resize(image,image,Size(),reconstructionScale,reconstructionScale);
+        std::cout << image.rows << ", " << image.cols << std::endl;
+        cv::Mat cropped = image(cv::Rect(2, 12,768, 576));
+        cv::cvtColor(cropped, cropped, cv::COLOR_GRAY2BGR);
         
-        images.push_back(image.clone());
+        images.push_back(cropped.clone());
         Rs.push_back(R.clone());
         Ts.push_back(T.clone());
         Rs0.push_back(R.clone());
@@ -222,7 +225,8 @@ int App_main( int argc, char** argv )
                 cout<<Rs0[i]<<Rs[i];
                 reprojectCloud(images[i],images[cv.fid],tracker.depth,RTToP(Rs[cv.fid],Ts[cv.fid]),RTToP(Rs[i],Ts[i]),cameraMatrix);
             }
-            cv=CostVolume(images[imageNum],(FrameID)imageNum,layers,0.015,0.0,Rs[imageNum],Ts[imageNum],cameraMatrix);
+            cv=CostVolume(images[imageNum],(FrameID)imageNum,layers,0.015,0.0,
+                          Rs[imageNum],Ts[imageNum],cameraMatrix);
             s=optimizer.cvStream;
 //             for (int imageNum=0;imageNum<numImg;imageNum=imageNum+1){
 //                 reprojectCloud(images[imageNum],images[0],optimizer.depthMap(),RTToP(Rs[0],Ts[0]),RTToP(Rs[imageNum],Ts[imageNum]),cameraMatrix);

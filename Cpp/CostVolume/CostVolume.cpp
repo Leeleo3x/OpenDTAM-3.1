@@ -60,6 +60,8 @@ CostVolume::CostVolume(Mat image, FrameID _fid, int _layers, float _near,
         float initialCost, float initialWeight): R(R),T(T),initialWeight(initialWeight) {
 
     //For performance reasons, OpenDTAM only supports multiple of 32 image sizes with cols >= 64
+    std::cout << image.rows << std::endl;
+    std::cout << image.cols << std::endl;
     CV_Assert(image.rows % 32 == 0 && image.cols % 32 == 0 && image.cols >= 64);
 //     CV_Assert(_layers>=8);
     

@@ -20,7 +20,7 @@ void convertAhandaPovRayToStandard(const char * filepath,
                                    Mat& T)
 {
     char text_file_name[600];
-    sprintf(text_file_name,"%s/scene_%03d.txt",filepath,imageNumber);
+    sprintf(text_file_name,"%s/%04d.txt",filepath,imageNumber);
 
     cout << "text_file_name = " << text_file_name << endl;
 
@@ -31,98 +31,24 @@ void convertAhandaPovRayToStandard(const char * filepath,
         exit(1);
     }
 
-    char readlinedata[300];
 
-    Point3d direction;
-    Point3d upvector;
-    Point3d posvector;
-
-
-    while(1){
-        cam_pars_file.getline(readlinedata,300);
-//         cout<<readlinedata<<endl;
-        if ( cam_pars_file.eof())
-            break;
-
-
-        istringstream iss;
-
-
-        if ( strstr(readlinedata,"cam_dir")!= NULL){
-
-
-            string cam_dir_str(readlinedata);
-
-            cam_dir_str = cam_dir_str.substr(cam_dir_str.find("= [")+3);
-            cam_dir_str = cam_dir_str.substr(0,cam_dir_str.find("]"));
-
-            iss.str(cam_dir_str);
-            iss >> direction.x ;
-            iss.ignore(1,',');
-            iss >> direction.z ;
-            iss.ignore(1,',') ;
-            iss >> direction.y;
-            iss.ignore(1,',');
-//             cout << "direction: "<< direction.x<< ", "<< direction.y << ", "<< direction.z << endl;
-
-        }
-
-        if ( strstr(readlinedata,"cam_up")!= NULL){
-
-            string cam_up_str(readlinedata);
-
-            cam_up_str = cam_up_str.substr(cam_up_str.find("= [")+3);
-            cam_up_str = cam_up_str.substr(0,cam_up_str.find("]"));
-
-
-            iss.str(cam_up_str);
-            iss >> upvector.x ;
-            iss.ignore(1,',');
-            iss >> upvector.z ;
-            iss.ignore(1,',');
-            iss >> upvector.y ;
-            iss.ignore(1,',');
-
-
-
-        }
-
-        if ( strstr(readlinedata,"cam_pos")!= NULL){
-//            cout<< "cam_pos is present!"<<endl;
-
-            string cam_pos_str(readlinedata);
-
-            cam_pos_str = cam_pos_str.substr(cam_pos_str.find("= [")+3);
-            cam_pos_str = cam_pos_str.substr(0,cam_pos_str.find("]"));
-
-//            cout << "cam pose str = " << endl;
-//            cout << cam_pos_str << endl;
-
-            iss.str(cam_pos_str);
-            iss >> posvector.x ;
-            iss.ignore(1,',');
-            iss >> posvector.z ;
-            iss.ignore(1,',');
-            iss >> posvector.y ;
-            iss.ignore(1,',');
-//             cout << "position: "<<posvector.x<< ", "<< posvector.y << ", "<< posvector.z << endl;
-
-        }
-
-    }
-
+    Mat M(4, 4, CV_64F);
     R=Mat(3,3,CV_64F);
-    R.row(0)=Mat(direction.cross(upvector)).t();
-    R.row(1)=Mat(-upvector).t();
-    R.row(2)=Mat(direction).t();
+    for (int i = 0; i < 16; i++) {
+        double x;
+        cam_pars_file >> x;
+        M.at<double>(i) = x;
+    }
+    R = M(cv::Rect(0, 0, 3, 3));
 
-    T=-R*Mat(posvector);
-//     cout<<"T: "<<T<<endl<<"pos: "<<Mat(posvector)<<endl;
+    T = M(cv::Rect(3, 0, 1, 3));
+   cout<<"T: "<<T<<endl<<"pos: "<<Mat(R)<<endl;
+    cout<<"M: "<<M<<endl;
    /* cameraMatrix=(Mat_<double>(3,3) << 480,0.0,320.5,
 										    0.0,480.0,240.5,
 										    0.0,0.0,1.0);*/
-    cameraMatrix=(Mat_<double>(3,3) << 481.20,0.0,319.5,
-                  0.0,480.0,239.5,
+    cameraMatrix=(Mat_<double>(3,3) << 566.3098,0.0,384.9639,
+                  0.0,566.7987,297.9757,
                   0.0,0.0,1.0);
 
 }
